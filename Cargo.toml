@@ -3,8 +3,16 @@ reqwest = { version = "0.11", features = ["blocking", "rustls-tls"] }
 serde = { version = "1.0", features = ["derive"] }
 url = "2.2"
 sys-proxy = "0.3"
-# JS引擎：boa 或 quick-js（解析PAC用）
 boa_engine = "0.17"
 cocoa = "0.24"
 core-foundation = "0.9"
 core-foundation-sys = "0.8"
+scopeguard = "1.1"
+log = "0.4"
+env_logger = "0.9" # Added for logging backend
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winhttp", "winbase", "errhandlingapi"] }
+
+[target.'cfg(macos)'.dependencies]
+system-configuration = "0.5"
