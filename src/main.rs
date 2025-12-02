@@ -18,7 +18,7 @@ pub fn find_proxy_for_url(url: &str) -> Result<String, Box<dyn Error>> {
     // 2. Try system proxy (per platform)
     #[cfg(target_os = "macos")]
     {
-        if let Some(sys_proxy) = crate::system_proxy::mac::get_macOS_proxy(url) {
+        if let Some(sys_proxy) = crate::system_proxy::macos::get_macos_proxy(url) {
             log_info!("Using macOS system proxy: {}", sys_proxy);
             return Ok(sys_proxy);
         }

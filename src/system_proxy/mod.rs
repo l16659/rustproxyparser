@@ -1,7 +1,7 @@
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "macos")]
-mod macos;
+pub mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
 
@@ -9,7 +9,7 @@ mod windows;
 pub fn get_system_proxy(url: &str) -> Option<String> {
     #[cfg(target_os = "macos")]
     {
-        macos::get_macOS_proxy(url)
+        macos::get_macos_proxy(url)
     }
     #[cfg(target_os = "linux")]
     {
