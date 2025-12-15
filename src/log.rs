@@ -1,3 +1,4 @@
+// src/log.rs
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

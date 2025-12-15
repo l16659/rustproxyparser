@@ -1,4 +1,4 @@
-use crate::{log_info, log_warning};
+use crate::{log_info, log_warn};
 use std::env;
 
 /// Return proxy string from environment variables if present, else None.

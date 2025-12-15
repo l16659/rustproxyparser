@@ -4,22 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-env_logger = "0.10"
-reqwest = { version = "0.11", features = ["blocking", "rustls-tls"] }
-serde = { version = "1.0", features = ["derive"] }
-url = "2.2"
-boa_engine = "0.17"
-cocoa = "0.24"
+boa_engine = "0.19"
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }  # rustls 避免 openssl 依赖
+url = "2.5"
 core-foundation = "0.9"
-core-foundation-sys = "0.8"
-scopeguard = "1.1"
+system-configuration = "0.6"
+scopeguard = "1.2"
 regex = "1.10"
-system-configuration = "0.5"
-core_foundation = "0.9"
+system-configuration-sys = "0.6"
+chrono = { version = "0.4", features = ["clock"] }  # 用于 weekdayRange
 
+# 只在 macOS 上需要这些
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.9"
+system-configuration = "0.6"
 
-[target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winhttp", "winbase", "errhandlingapi"] }
-
-[target.'cfg(macos)'.dependencies]
-system-configuration = "0.5"
+[[bin]]
+name = "proxyparser"
+path = "src/main.rs"
