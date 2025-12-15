@@ -1,163 +1,165 @@
+// src/system_proxy/linux.rs
+
 #[cfg(target_os = "linux")]
 use crate::log::*;
 use std::process::Command;
-use sys_proxy::ProxyConfig;
 use url::Url;
 
 #[cfg(target_os = "linux")]
 pub fn get_linux_proxy(url: &str) -> Option<String> {
-    // Parse the input URL
     let parsed_url = match Url::parse(url) {
         Ok(u) => u,
-        Err(e) => {
-            log_warning(&format!("Failed to parse URL '{}': {}", url, e));
-            return None;
-        }
+        Err(_) => return None,
     };
     let scheme = parsed_url.scheme();
 
-    // Check GNOME proxy settings
-    let gnome_proxy = get_gnome_proxy(&parsed_url);
-    if let Some(proxy_url) = gnome_proxy {
-        return Some(proxy_url);
+    // 1. GNOME (most common on Ubuntu/Fedora etc.)
+    if let Some(proxy) = get_gnome_proxy(&parsed_url) {
+        return Some(proxy);
     }
 
-    // Check KDE proxy settings
-    let kde_proxy = get_kde_proxy(&parsed_url);
-    if let Some(proxy_url) = kde_proxy {
-        return Some(proxy_url);
+    // 2. KDE
+    if let Some(proxy) = get_kde_proxy(&parsed_url, scheme) {
+        return Some(proxy);
     }
 
-    // Fallback to sys-proxy crate
-    if let Ok(proxy_config) = ProxyConfig::load() {
-        if let Some(proxy_url) = proxy_config.get_proxy_for_url(url) {
-            log_info(&format!("Found proxy via sys-proxy: {}", proxy_url));
-            return Some(proxy_url);
+    // 3. Fallback: environment variables (some apps set http_proxy etc.)
+    if let Some(env_proxy) = std::env::var("http_proxy")
+        .ok()
+        .or_else(|| std::env::var("HTTP_PROXY").ok())
+    {
+        if !env_proxy.is_empty() {
+            return Some(env_proxy);
+        }
+    }
+    if let Some(env_proxy) = std::env::var("https_proxy")
+        .ok()
+        .or_else(|| std::env::var("HTTPS_PROXY").ok())
+    {
+        if !env_proxy.is_empty() {
+            return Some(env_proxy);
         }
     }
 
-    log_info(&format!("No applicable proxy found for URL '{}'", url));
     None
 }
 
-// Helper function to get GNOME proxy settings
+// GNOME proxy (gsettings)
 #[cfg(target_os = "linux")]
 fn get_gnome_proxy(url: &Url) -> Option<String> {
-    // Check GNOME proxy mode
-    let mode = Command::new("gsettings")
+    let mode_output = Command::new("gsettings")
         .args(["get", "org.gnome.system.proxy", "mode"])
         .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-        .map(|s| s.trim().trim_matches('\'').to_string());
+        .ok()?;
+    let mode = String::from_utf8_lossy(&mode_output.stdout)
+        .trim()
+        .trim_matches('\'')
+        .to_string();
 
-    if mode.as_deref() != Some("manual") && mode.as_deref() != Some("auto") {
-        log_info("GNOME proxy mode is not set to 'manual' or 'auto'");
-        return None;
-    }
+    if mode == "manual" {
+        let scheme_key = match url.scheme() {
+            "http" => "http",
+            "https" => "https",
+            _ => return None,
+        };
 
-    if mode.as_deref() == Some("auto") {
-        // Get auto-config URL (PAC file)
-        if let Some(pac_url) = Command::new("gsettings")
+        let host_output = Command::new("gsettings")
+            .args([
+                "get",
+                "org.gnome.system.proxy.http",
+                &format!("{}-host", scheme_key),
+            ])
+            .output()
+            .ok()?;
+        let host = String::from_utf8_lossy(&host_output.stdout)
+            .trim()
+            .trim_matches('\'')
+            .to_string();
+
+        let port_output = Command::new("gsettings")
+            .args([
+                "get",
+                "org.gnome.system.proxy.http",
+                &format!("{}-port", scheme_key),
+            ])
+            .output()
+            .ok()?;
+        let port: i32 = String::from_utf8_lossy(&port_output.stdout)
+            .trim()
+            .parse()
+            .unwrap_or(0);
+
+        if !host.is_empty() && port > 0 {
+            return Some(format!("http://{}:{}", host, port));
+        }
+    } else if mode == "auto" {
+        let pac_output = Command::new("gsettings")
             .args(["get", "org.gnome.system.proxy", "autoconfig-url"])
             .output()
-            .ok()
-            .and_then(|output| String::from_utf8(output.stdout).ok())
-            .map(|s| s.trim().trim_matches('\'').to_string())
-            .filter(|s| !s.is_empty())
-        {
-            log_info(&format!("Found GNOME PAC file: {}", pac_url));
-            // Placeholder for PAC file evaluation
-            log_warning("PAC file evaluation not implemented yet");
-            return None; // TODO: Implement PAC parsing when JS library is chosen
+            .ok()?;
+        let pac_url = String::from_utf8_lossy(&pac_output.stdout)
+            .trim()
+            .trim_matches('\'')
+            .to_string();
+        if !pac_url.is_empty() {
+            log_info!("Found GNOME PAC URL: {}", pac_url);
+            return Some(pac_url);
         }
-    }
-
-    // Get manual proxy settings
-    let scheme = url.scheme();
-    let proxy_key = match scheme {
-        "https" => "org.gnome.system.proxy.https",
-        "http" => "org.gnome.system.proxy.http",
-        _ => return None,
-    };
-
-    let host = Command::new("gsettings")
-        .args(["get", proxy_key, "host"])
-        .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-        .map(|s| s.trim().trim_matches('\'').to_string())
-        .filter(|s| !s.is_empty());
-
-    let port = Command::new("gsettings")
-        .args(["get", proxy_key, "port"])
-        .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-        .and_then(|s| s.trim().parse::<u16>().ok());
-
-    if let (Some(host), Some(port)) = (host, port) {
-        let proxy_url = format!("{}://{}:{}", scheme, host, port);
-        log_info(&format!("Found GNOME {} proxy: {}", scheme, proxy_url));
-        return Some(proxy_url);
     }
 
     None
 }
 
-// Helper function to get KDE proxy settings
+// KDE proxy (kreadconfig5 or kreadconfig6)
 #[cfg(target_os = "linux")]
-fn get_kde_proxy(url: &Url) -> Option<String> {
-    // Check KDE proxy settings via kreadconfig5
-    let scheme = url.scheme();
-    let proxy_type_key = "ProxyType";
-    let proxy_type = Command::new("kreadconfig5")
-        .args(["--group", "Proxy Settings", "--key", proxy_type_key])
+fn get_kde_proxy(url: &Url, scheme: &str) -> Option<String> {
+    let kread = if Command::new("kreadconfig6").output().is_ok() {
+        "kreadconfig6"
+    } else {
+        "kreadconfig5"
+    };
+
+    let proxy_type_output = Command::new(kread)
+        .args(["--group", "Proxy Settings", "--key", "ProxyType"])
         .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-        .map(|s| s.trim().to_string());
+        .ok()?;
+    let proxy_type = String::from_utf8_lossy(&proxy_type_output.stdout)
+        .trim()
+        .to_string();
 
-    match proxy_type.as_deref() {
-        Some("1") => {
-            // Manual proxy
-            let proxy_key = match scheme {
-                "https" => "httpsProxy",
-                "http" => "httpProxy",
-                _ => return None,
-            };
-            let proxy = Command::new("kreadconfig5")
-                .args(["--group", "Proxy Settings", "--key", proxy_key])
-                .output()
-                .ok()
-                .and_then(|output| String::from_utf8(output.stdout).ok())
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty());
+    if proxy_type == "1" {
+        // Manual
+        let proxy_key = match scheme {
+            "http" => "httpProxy",
+            "https" => "httpsProxy",
+            _ => return None,
+        };
 
-            if let Some(proxy_url) = proxy {
-                log_info(&format!("Found KDE {} proxy: {}", scheme, proxy_url));
-                return Some(proxy_url);
-            }
+        let proxy_output = Command::new(kread)
+            .args(["--group", "Proxy Settings", "--key", proxy_key])
+            .output()
+            .ok()?;
+        let proxy = String::from_utf8_lossy(&proxy_output.stdout)
+            .trim()
+            .to_string();
+
+        if !proxy.is_empty() {
+            return Some(format!("http://{}", proxy));
         }
-        Some("2") => {
-            // PAC file
-            if let Some(pac_url) = Command::new("kreadconfig5")
-                .args(["--group", "Proxy Settings", "--key", "ProxyConfigScript"])
-                .output()
-                .ok()
-                .and_then(|output| String::from_utf8(output.stdout).ok())
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty())
-            {
-                log_info(&format!("Found KDE PAC file: {}", pac_url));
-                // Placeholder for PAC file evaluation
-                log_warning("PAC file evaluation not implemented yet");
-                return None; // TODO: Implement PAC parsing when JS library is chosen
-            }
-        }
-        _ => {
-            log_info("KDE proxy not configured or not supported");
+    } else if proxy_type == "2" {
+        // PAC
+        let pac_output = Command::new(kread)
+            .args(["--group", "Proxy Settings", "--key", "ProxyConfigScript"])
+            .output()
+            .ok()?;
+        let pac_url = String::from_utf8_lossy(&pac_output.stdout)
+            .trim()
+            .to_string();
+        if !pac_url.is_empty() {
+            log_info!("Found KDE PAC URL: {}", pac_url);
+            return Some(pac_url);
         }
     }
+
     None
 }
