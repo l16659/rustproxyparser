@@ -10,7 +10,7 @@ use core_foundation::string::{CFString, CFStringRef};
 use scopeguard::defer;
 use std::ptr;
 
-// 直接从低层次 sys crate 调用原始函数（public）
+// 使用 sys crate 的 FFI 接口（全局依赖，确保不 private）
 use system_configuration_sys::dynamic_store_copy_specific::SCDynamicStoreCopyProxies;
 
 const kSCPropNetProxiesProxyAutoConfigURLString: &str = "ProxyAutoConfigURLString";

@@ -5,20 +5,29 @@ edition = "2021"
 
 [dependencies]
 boa_engine = "0.19"
-reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }  # rustls 避免 openssl 依赖
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
 url = "2.5"
-core-foundation = "0.9"
-system-configuration = "0.6"
 scopeguard = "1.2"
 regex = "1.10"
-system-configuration-sys = "0.6"
-chrono = { version = "0.4", features = ["clock"] }  # 用于 weekdayRange
+chrono = { version = "0.4", features = ["clock"] }
+system-configuration-sys = "0.6"  # 移到全局，确保 macOS/Windows 都能用 FFI
 
-# 只在 macOS 上需要这些
+# macOS 专用
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.9"
 system-configuration = "0.6"
 
+# Windows 专用
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3", features = ["winhttp", "errhandlingapi", "winbase", "winerror"] }
+
 [[bin]]
 name = "proxyparser"
 path = "src/main.rs"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
