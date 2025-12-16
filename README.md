@@ -37,3 +37,10 @@ cargo build --release
 
 # Default: queries google.com
 ./target/release/proxyparser
+
+```
+
+## 🚧 Under Maintenance & Development
+This project is currently under active maintenance and iterative development. 
+
+Stay tuned for the next release!
