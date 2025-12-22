@@ -1,0 +1,10 @@
+[windows test result]
+
+PS D:\srccode\rustproxyparser> .\target\release\proxyparser.exe -url:http://www.google.com
+[INFO] Found manual proxy from IE config: 127.0.0.1:10808
+[INFO] Using system manual proxy: http://127.0.0.1:10808
+Proxy for -url:http://www.google.com → http://127.0.0.1:10808
+PS D:\srccode\rustproxyparser> .\target\release\proxyparser.exe -url:http://www.youtube.com
+[INFO] Found manual proxy from IE config: 127.0.0.1:10808
+[INFO] Using system manual proxy: http://127.0.0.1:10808
+Proxy for -url:http://www.youtube.com → http://127.0.0.1:10808

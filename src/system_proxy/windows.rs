@@ -1,7 +1,7 @@
 // src/system_proxy/windows.rs
 
 #[cfg(target_os = "windows")]
-use crate::log::*;
+use crate::{log_info, log_warn};
 use std::ffi::{OsStr, OsString};
 use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::ptr;

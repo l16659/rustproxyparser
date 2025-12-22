@@ -10,12 +10,13 @@ url = "2.5"
 scopeguard = "1.2"
 regex = "1.10"
 chrono = { version = "0.4", features = ["clock"] }
-system-configuration-sys = "0.6"  # 移到全局，确保 macOS/Windows 都能用 FFI
+  # 移到全局，确保 macOS/Windows 都能用 FFI
 
 # macOS 专用
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.9"
 system-configuration = "0.6"
+system-configuration-sys = "0.6"
 
 # Windows 专用
 [target.'cfg(target_os = "windows")'.dependencies]
