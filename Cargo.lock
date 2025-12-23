@@ -1368,6 +1368,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "proxyparser"
+version = "0.1.0"
+dependencies = [
+ "boa_engine",
+ "chrono",
+ "core-foundation",
+ "regex",
+ "reqwest",
+ "scopeguard",
+ "system-configuration",
+ "system-configuration-sys",
+ "url",
+ "winapi",
+]
+
+[[package]]
 name = "quinn"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1662,22 +1678,6 @@ dependencies = [
  "ring",
  "rustls-pki-types",
  "untrusted",
-]
-
-[[package]]
-name = "rustproxyparser"
-version = "0.1.0"
-dependencies = [
- "boa_engine",
- "chrono",
- "core-foundation",
- "regex",
- "reqwest",
- "scopeguard",
- "system-configuration",
- "system-configuration-sys",
- "url",
- "winapi",
 ]
 
 [[package]]

@@ -1,46 +1,51 @@
-# rustproxyparser
+# proxyparser
 
-A cross-platform system proxy detector written in Rust, with strong support for complex enterprise PAC scripts.
+[![Crates.io](https://img.shields.io/crates/v/proxyparser.svg)](https://crates.io/crates/proxyparser)
+[![Downloads](https://img.shields.io/crates/d/proxyparser.svg)](https://crates.io/crates/proxyparser)
+[![CI](https://github.com/l16659/rustproxyparser/actions/workflows/ci.yml/badge.svg)](https://github.com/l16659/rustproxyparser/actions)
 
-The current version fully supports macOS (including manual proxies and automatic proxy configuration). Windows and Linux support is in progress.
+A cross-platform system proxy detector written in Rust, with **strong support for complex enterprise PAC scripts**.
+
+Currently fully supports **macOS** (manual + automatic proxy configuration).  
+Windows and Linux support is actively in development.
 
 ## Features
 
-- **Accurate system proxy detection**
+- Accurate system proxy detection across platforms
   - macOS: Complete implementation using SystemConfiguration / CoreFoundation
-  - Windows: Based on WinHTTP API (in development)
-  - Linux: Supports GNOME/KDE configuration reading (in development)
+  - Windows: WinHTTP API (in progress)
+  - Linux: GNOME/KDE config reading (in progress)
 
-- **Full PAC script support**
+- Full-featured PAC script support
   - Automatic download of PAC files (http/https)
-  - JavaScript execution using pure Rust `boa_engine`
-  - Implements all common PAC functions:
-    - `dnsResolve`, `myIpAddress`, `isInNet`, `isResolvable`
-    - `shExpMatch`, `dnsDomainIs`, `localHostOrDomainIs`
-    - `dnsDomainLevels`, `weekdayRange`, etc.
-  - Handles complex enterprise PAC scripts (e.g., Zscaler, corporate networks)
+  - Pure-Rust JavaScript execution via `boa_engine`
+  - Implements all standard PAC functions (`dnsResolve`, `myIpAddress`, `isInNet`, `shExpMatch`, etc.)
+  - Handles complex enterprise scenarios (Zscaler, corporate networks, etc.)
 
-- **Correct priority order**
-  - Environment variables (HTTP_PROXY, etc.) > System proxy > DIRECT
+- Correct proxy priority order
+  - Environment variables (`HTTP_PROXY`, etc.) → System proxy → DIRECT
 
-- **Lightweight and efficient**
-  - Release build size ~4.7MB (heavily optimized)
+- Lightweight binary (~4.7 MB release build, heavily optimized)
 
-## Usage
+## Installation
 
 ```bash
-# Build
+cargo install proxyparser
+
+
+# Query the proxy for a specific URL
+proxyparser https://httpbin.org/ip
+
+# Use the default target (google.com) if no URL is provided
+proxyparser
+
+git clone https://github.com/l16659/rustproxyparser.git
+cd rustproxyparser
 cargo build --release
+./target/release/proxyparser https://example.com
 
-# Query proxy for a specific URL
-./target/release/proxyparser https://httpbin.org/ip
+# Current Status
+This project is under active development and maintenance.
 
-# Default: queries google.com
-./target/release/proxyparser
-
-```
-
-## 🚧 Under Maintenance & Development
-This project is currently under active maintenance and iterative development. 
-
-Stay tuned for the next release!
+# License
+This project is licensed under the MIT License.

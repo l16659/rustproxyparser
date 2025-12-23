@@ -1,7 +1,12 @@
 [package]
-name = "rustproxyparser"
+name = "proxyparser"
 version = "0.1.0"
 edition = "2021"
+description = "A cross-platform system proxy detector with strong support for complex enterprise PAC scripts"
+license = "MIT"
+repository = "https://github.com/l16659/rustproxyparser"
+keywords = ["proxy", "pac", "system-proxy", "network", "http-proxy"]
+categories = ["network-programming", "command-line-utilities"]
 
 [dependencies]
 boa_engine = "0.19"
@@ -10,7 +15,6 @@ url = "2.5"
 scopeguard = "1.2"
 regex = "1.10"
 chrono = { version = "0.4", features = ["clock"] }
-  # 移到全局，确保 macOS/Windows 都能用 FFI
 
 # macOS 专用
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -23,7 +27,7 @@ system-configuration-sys = "0.6"
 winapi = { version = "0.3", features = ["winhttp", "errhandlingapi", "winbase", "winerror"] }
 
 [[bin]]
-name = "proxyparser"
+name = "proxyparser"              # 保持一致，用户 cargo install 后命令就是 proxyparser
 path = "src/main.rs"
 
 [profile.release]
