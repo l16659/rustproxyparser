@@ -1,6 +1,6 @@
 // src/pac/engine.rs
 use super::downloader::download_pac;
-use crate::{log_info, log_warn};
+use crate::log_warn;
 use boa_engine::{
     js_string, Context, JsNativeError, JsResult, JsString, JsValue, NativeFunction, Source,
 };

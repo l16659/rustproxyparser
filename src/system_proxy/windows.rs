@@ -5,14 +5,12 @@ use crate::{log_info, log_warn};
 use std::ffi::{OsStr, OsString};
 use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::ptr;
-use winapi::shared::winerror::ERROR_SUCCESS;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winhttp::{
     WinHttpCloseHandle, WinHttpGetIEProxyConfigForCurrentUser, WinHttpGetProxyForUrl, WinHttpOpen,
     WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_AUTOPROXY_OPTIONS, WINHTTP_AUTO_DETECT_TYPE_DHCP,
     WINHTTP_AUTO_DETECT_TYPE_DNS_A, WINHTTP_CURRENT_USER_IE_PROXY_CONFIG, WINHTTP_PROXY_INFO,
 };
-use winapi::um::winnt::HANDLE;
 
 #[cfg(target_os = "windows")]
 pub fn get_windows_proxy(url: &str) -> Option<String> {

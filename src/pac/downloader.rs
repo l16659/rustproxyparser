@@ -1,5 +1,5 @@
 // src/pac/downloader.rs
-use crate::{log_error, log_info, log_warn};
+use crate::{log_error, log_info};
 use reqwest::blocking::Client;
 use std::time::Duration;
 
