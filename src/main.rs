@@ -1,5 +1,5 @@
 // src/main.rs
-use rustproxyparser::find_proxy_for_url;
+use proxyparser::find_proxy_for_url;
 use std::env;
 
 fn main() {

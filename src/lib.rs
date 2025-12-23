@@ -3,10 +3,22 @@ pub mod env_proxy;
 pub mod log;
 pub mod pac;
 pub mod system_proxy;
-
-use log::*;
 use std::error::Error;
 
+/// Detects the appropriate proxy for the given URL, following standard priority order:
+///
+/// 1. Environment variables (HTTP_PROXY, etc.)
+/// 2. System proxy settings (with full PAC script support on supported platforms)
+/// 3. DIRECT (no proxy)
+///
+/// Currently fully supports macOS. Windows and Linux are in development.
+///
+/// # Examples
+///
+/// ```
+/// let proxy = find_proxy_for_url("https://httpbin.org/ip")?;
+/// println!("{}", proxy); // DIRECT or PROXY host:port
+/// ```
 pub fn find_proxy_for_url(url: &str) -> Result<String, Box<dyn Error>> {
     // 1. 环境变量最高优先级
     if let Some(proxy) = env_proxy::get_env_proxy(url) {
