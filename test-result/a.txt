@@ -8,3 +8,11 @@ PS D:\srccode\rustproxyparser> .\target\release\proxyparser.exe -url:http://www.
 [INFO] Found manual proxy from IE config: 127.0.0.1:10808
 [INFO] Using system manual proxy: http://127.0.0.1:10808
 Proxy for -url:http://www.youtube.com → http://127.0.0.1:10808
+
+
+[Ubuntu]
+
+@l16659 ➜ /workspaces/rustproxyparser (main) $ ./target/debug/proxyparser -url:http://www.baidu.com
+[INFO] No proxy found, using DIRECT
+Proxy for -url:http://www.baidu.com → DIRECT
+@l16659 ➜ /workspaces/rustproxyparser (main) $ 

@@ -1,10 +1,9 @@
 // src/system_proxy/linux.rs
 
 #[cfg(target_os = "linux")]
-use crate::log::*;
+use crate::{log_info, log_warn};
 use std::process::Command;
 use url::Url;
-
 #[cfg(target_os = "linux")]
 pub fn get_linux_proxy(url: &str) -> Option<String> {
     let parsed_url = match Url::parse(url) {
